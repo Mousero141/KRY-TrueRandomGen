@@ -1,0 +1,97 @@
+------------------------------------------------------------------------------------------
+01_12_2021--07_12_14_PM
+INFO:root:Chosen action -> 'Generate new prime number'
+INFO:root:LENGTH OF DESIRED PRIME NUMBER:13
+INFO:root:Chosen action -> ''
+INFO:root:Chosen action -> ''
+INFO:root:Chosen action -> 'Export generated number from file(bin/txt)'
+INFO:root:Fermat's test -> True
+CRITICAL:root:Invalid input
+------------------------------------------------------------------------------------------
+01_12_2021--07_23_00_PM
+INFO:root:Enter only positive numbers
+INFO:root:Chosen action -> 'Test of primality for entered number'
+
+INFO:root:Chosen action -> 'Generate new prime number'
+INFO:root:LENGTH OF DESIRED PRIME NUMBER:123
+INFO:root:Chosen action -> 'Test of primality for entered number'
+
+------------------------------------------------------------------------------------------
+01_12_2021--07_26_49_PM
+INFO:root:Chosen action -> 'Generate new prime number'
+INFO:root:LENGTH OF DESIRED PRIME NUMBER:12
+INFO:root:Chosen action -> 'Test of primality for entered number'
+
+INFO:root:Fermat's test -> True
+INFO:root:2659 Miller Rabin's test-> True
+INFO:root:2659 not a prime number
+INFO:root:Chosen action -> ''
+INFO:root:Chosen action -> 'Import number from a file(bin/txt)'
+INFO:root:Fermat's test -> True
+CRITICAL:root:Unexpected Error
+------------------------------------------------------------------------------------------
+01_12_2021--07_51_23_PM
+INFO:root:Chosen action -> 'Generate new prime number'
+INFO:root:LENGTH OF DESIRED PRIME NUMBER:12
+INFO:root:Chosen action -> 'Test of primality for entered number'
+
+INFO:root:Fermat's test -> False
+------------------------------------------------------------------------------------------
+01_12_2021--07_52_41_PM
+INFO:root:Enter only positive numbers
+INFO:root:Enter only positive numbers
+INFO:root:Enter only positive numbers
+INFO:root:Enter only positive numbers
+INFO:root:Enter only positive numbers
+INFO:root:Enter only positive numbers
+INFO:root:Chosen action -> 'Generate new prime number'
+INFO:root:LENGTH OF DESIRED PRIME NUMBER:2
+INFO:root:Chosen action -> 'Test of primality for entered number'
+
+INFO:root:3 Miller Rabin's test-> True
+------------------------------------------------------------------------------------------
+01_12_2021--07_56_50_PM
+INFO:root:Chosen action -> 'Generate new prime number'
+INFO:root:LENGTH OF DESIRED PRIME NUMBER:12
+INFO:root:Chosen action -> 'Test of primality for entered number'
+
+INFO:root:Fermat's test -> True
+INFO:root:3463 Miller Rabin's test-> True
+INFO:root:3463 not a prime number
+------------------------------------------------------------------------------------------
+01_12_2021--08_24_34_PM
+INFO:root:Enter only positive numbers
+INFO:root:Enter only positive numbers
+INFO:root:Chosen action -> 'Import number from a file(bin/txt)'
+------------------------------------------------------------------------------------------
+01_12_2021--08_59_47_PM
+INFO:root:Chosen action -> 'Import number from a file(bin/txt)'
+INFO:root:Fermat's test -> True
+------------------------------------------------------------------------------------------
+01_12_2021--09_01_28_PM
+INFO:root:Chosen action -> 'Generate new prime number'
+INFO:root:LENGTH OF DESIRED PRIME NUMBER:12
+INFO:root:Chosen action -> 'Test of primality for entered number'
+
+INFO:root:Fermat's test -> False
+------------------------------------------------------------------------------------------
+01_12_2021--09_04_47_PM
+INFO:root:Chosen action -> 'Generate new prime number'
+INFO:root:LENGTH OF DESIRED PRIME NUMBER:2
+INFO:root:Chosen action -> 'Test of primality for entered number'
+
+------------------------------------------------------------------------------------------
+01_12_2021--09_06_47_PM
+INFO:root:Chosen action -> 'Generate new prime number'
+INFO:root:LENGTH OF DESIRED PRIME NUMBER:5
+INFO:root:Chosen action -> 'Test of primality for entered number'
+
+INFO:root:Fermat's test -> True
+INFO:root:29 Miller Rabin's test-> True
+INFO:root:29 not a prime number
+------------------------------------------------------------------------------------------
+21_02_2024--10_39_14_AM
+------------------------------------------------------------------------------------------
+21_02_2024--04_48_32_PM
+------------------------------------------------------------------------------------------
+11_03_2024--09_56_47_AM

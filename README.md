@@ -1,2 +1,2 @@
-# KRY-TrueRandomGen
-Brno BUT project to Cryptography curse. 
+# ACR-Large-Primes-Generator
+
