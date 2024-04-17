@@ -1,5 +1,8 @@
-#import large_prime_generation as primes
+# import large_prime_generation as primes
 import sys
+
+import pyautogui as pyautogui
+
 import large_prime_generation as lpg
 import erathostens_sieve as es
 import time
@@ -9,14 +12,18 @@ import os
 import miller_rabin_test as miller
 import fermat_test as fermat
 import lucas_lehmer_primality_test as lehmer
+import sympy
+import hashlib
+import time
+import os
+import inspect
 
+print(os.path.dirname(inspect.getfile(inspect)) + "/site-packages")
 
-
-number=0
+number = 0
 global generatedNumber
 global last_line
 global number_in_file
-
 
 print("ACR-Large-Primes-Generator\n")
 
@@ -25,14 +32,92 @@ log_file.write('----------------------------------------------------------------
 log_file.write(time.strftime('%d_%m_%Y--%I_%M_%S_%p\n'))
 log_file.close()
 
-logging.basicConfig(filename = 'test.log', level = logging.DEBUG)
+logging.basicConfig(filename='test.log', level=logging.DEBUG)
+
+def log_timestamp():
+    timestamp = time.strftime('%d_%m_%Y--%I_%M_%S_%p')
+    logging.info(timestamp)
+
+def mouse_movement_entropy(duration):
+    data = ''
+    start_time = time.time()
+    while (time.time() - start_time) < duration:
+        x, y = pyautogui.position()
+        data += f'{x},{y} '
+        time.sleep(0.00001)
+    print(data)
+    return data
+
+def get_hash_function(bit_length):
+    """Get the appropriate hash function based on the bit length."""
+    if bit_length == 128:
+        return hashlib.md5
+    elif bit_length == 256:
+        return hashlib.sha256
+    elif bit_length == 512:
+        return hashlib.sha512
+    elif bit_length == 1024:
+        return hashlib.sha512
+    else:
+        raise ValueError("Unsupported bit length for hash function")
+def generate_random_number(bit_length):
+    """Generate a random number with the specified bit length."""
+    # Check if bit_length is less than 128
+    # Check if bit_length is less than 128
+    if bit_length < 128:
+        print("Using os.urandom() for generating random number.")
+        num_bytes = (bit_length + 7) // 8
+        hash_digest = os.urandom(num_bytes)
+
+    else:
+        # Round the bit length to the nearest hash function
+        rounded_bit_length = round_to_nearest_hash_function(bit_length)
+        print("Using hash function for generating random number.")
+        # Pevný časový interval na základě současného času
+        current_time = int(time.time())
+        #duration = current_time % 10 + 5  # Pevný časový interval mezi 5 a 15 sekundami
+        duration = random.randint(0, 0) + random.random()  # Duration in seconds
+
+        print(f"Gathering mouse movement data for {duration} seconds...")
+        mouse_data = mouse_movement_entropy(duration)
+        hash_function = get_hash_function(rounded_bit_length)
+        hash_object = hash_function(mouse_data.encode())
+        hash_digest = hash_object.digest()
+
+        # Získání první poloviny z hash digest
+        first_half_digest = hash_digest[:len(hash_digest) // 2]
+        # Získání druhé poloviny z os.urandom
+        num_bytes = (bit_length + 7) // 8
+        second_half_random = os.urandom(num_bytes // 2)
+        # Zřetězení první poloviny s druhou polovinou
+        combined_bytes = first_half_digest + second_half_random
+
+    # Convert the hash to an integer
+    random_integer = int.from_bytes(combined_bytes, byteorder='big')
+
+    # Ensure the number of bits matches the specified bit length
+    # random_integer &= (1 << rounded_bit_length) - 1
+
+    return random_integer
+
+def round_to_nearest_hash_function(bit_length):
+    """Round the bit length to the nearest hash function."""
+    hash_functions = [128, 256, 512, 1024]  # List of hash function bit lengths
+    nearest_hash = min(hash_functions, key=lambda x: abs(x - bit_length))
+    return nearest_hash
+
+def is_prime(number):
+    """Check if the given number is prime."""
+    return sympy.isprime(number)
+
+
 print("1 - Generate new prime number")
-print("2 - Test of primality for entered number + Erathostens Sieve")
+print("2 - Generate with mouse")
 print("3 - Export generated number to file")
 print("4 - Import number from file + primality test\n")
 
-while(True):
-#V této části uživatel zadá délku prvočísla, které chce vygenerovat.
+while (True):
+    # V této části uživatel zadá délku prvočísla, které chce vygenerovat.
     try:
         choose_an_action = int(input("Choose what action you want to perform: "))
     except ValueError:
@@ -40,52 +125,32 @@ while(True):
     else:
         if choose_an_action == 1:
             logging.info("Chosen action -> \'Generate new prime number\'")
-            take_length = lpg.choose_a_length() #Definice délky
-            number=lpg.generating_number(take_length) #Vygenerování lichého čísla
-            print(number)
-            generatedNumber=str(number)#Konverze na string
-           
+            log_timestamp()
+
+            print("Warning: For security reasons, it is recommended to use bit lengths of 128 or more.")
+            bit_length = int(input("Enter the desired bit length for the random number: "))
+            # Generate a random number with the specified bit length
+
+            random_number = None
+            while not is_prime(random_number):
+                random_number = generate_random_number(bit_length)
+            print(f"Random number with {bit_length} bits: {random_number}")
+            print("The generated number is prime.")
+            break
+
         elif choose_an_action == 2:
-            #Aplikace 3 testů na vygenrovné liché číslo
-            logging.info("Chosen action -> \'Test of primality for entered number\'\n")
-            
-            if(number==0):
-                print("Number was not generated press 1 for generating number")
-            else:
-                fermat_test_solved=fermat.fermat_test1(number,3)
-                if fermat_test_solved:
-                        print("Number", number ,  "is a prime number according to the Fermat Primality Test")
+            logging.info("Chosen action -> Create number with mouse movement")
+            duration = random.randint(4, 15) + random.random()  # Doba sběru dat v sekundách
+            print(f"Sbírám data o pohybu myši po dobu {duration} sekund...")
+            mouse_data = mouse_movement_entropy(duration)
+            mouse_data = mouse_data.encode()
+            hash = hashlib.sha3_512(mouse_data)
+            print(f"Hashed pohyb myši: {hash.hexdigest()}")
 
-
-                        miller_rabin_test_print=miller.FinalPart(number)
-                        if miller_rabin_test_print:
-                            print("Number", number ,  "is a prime number accoring to Miller-Rabin test")
-
-
-                            lucas_lehmer_test_print=lehmer.lucas_lehmeruv(number)
-                            if lucas_lehmer_test_print:
-                                print("Number", number ,  "is a prime number accoring to Lucas-Lehmer test")
-                                print("\nErathostens Sieve:\n")
-                                print(es.poping_phase(number))
-                            
-
-
-                            else:
-                                print("Number", number ,  "is a not prime number accoring to Lucas-Lehmer test")
-                        else:
-                            print("Number", number, "is not a prime number accoring to Miller-Rabin test")
-                        
-                else:
-                    print("Number", number, "is not a prime number according to the Fermat Primality Test")
-                    #V případě, že číslo neprojde biť jedním testem aplikuje se funkce naive_incremetal generator
-                    naive_incremental_prime = lpg.naive_incremental_prime_generator(number)
-                    number=naive_incremental_prime
-                    
-            
         elif choose_an_action == 3:
-            #Export cisla do souboru .txt, bude se muset otevrit okno File exploreru, tak jak kdyz se vybira soubor k narati treba na Moodle
+            # Export cisla do souboru .txt, bude se muset otevrit okno File exploreru, tak jak kdyz se vybira soubor k narati treba na Moodle
             logging.info("Chosen action -> Export number to file")
-            if(number==0):
+            if (number == 0):
                 print("Number was not generated. If you want generate number press 1")
             else:
                 with open("generated_numbers.txt", "a", encoding="utf-8") as f:
@@ -93,15 +158,17 @@ while(True):
                     f.write(generatedNumber)
                 print("Generated number was written into file.")
                 logging.info("{} writted into a file".format(generatedNumber))
- 
+                log_timestamp()
         elif choose_an_action == 4:
-            #Import cisla ze souboru + otestovani prvociselnosti
+            # Import cisla ze souboru + otestovani prvociselnosti
             logging.info("Chosen action -> \'Import number from a file(bin/txt)\'")
+
 
             def is_file_empty(file_path):
                 return os.path.exists(file_path) and os.stat(file_path).st_size == 0
-   
-            file_path="generated_numbers.txt"
+
+
+            file_path = "generated_numbers.txt"
             is_empty = is_file_empty(file_path)
             if is_empty:
                 print("File is empty")
@@ -112,33 +179,12 @@ while(True):
 
                 for i in last_line:
                     if i.isdigit():
-                        number_in_file=int(i)
+                        number_in_file = int(i)
                         print("Generated number from file: ", number_in_file)
 
-                        fermat_test_solved=fermat.fermat_test1(number_in_file,3)
-                        if fermat_test_solved:
-                           print("Number", number_in_file ,  "is a prime number according to the Fermat Primality Test")
-                        else:
-                           print("Number", number_in_file ,  "is not a prime number according to the Fermat Primality Test")
-
-                        
-                        miller_rabin_test_print=miller.FinalPart(number_in_file)
-                
-                        if miller_rabin_test_print:
-                            print("Number", number_in_file ,  "is a prime number accoring to Miller-Rabin test")
-                        else:
-                            print("Number", number_in_file, "is not a prime number accoring to Miller-Rabin test")
-                        
-                        lucas_lehmer_test_print = lehmer.lucas_lehmeruv(number_in_file)
-                        if lucas_lehmer_test_print:
-                            print("Number", number_in_file ,  "is a prime number accoring to Lucas Lehmer test")
-                        else:
-                            print("Number", number_in_file, "is not a prime number accoring to Lucas Lehmer test")
-
-                    
-    
 
 
-    
+
+
 
 
