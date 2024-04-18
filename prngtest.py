@@ -48,7 +48,6 @@ __all__ = [
 # ------------------------------------------------------------------------------
 # Helpers
 
-
 class Result(NamedTuple):
     statistic: Union[int, float]
     p: float
