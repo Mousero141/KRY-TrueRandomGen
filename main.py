@@ -68,6 +68,7 @@ def generate_random_number(bit_length):
         print("Using os.urandom() for generating random number.")
         num_bytes = (bit_length + 7) // 8
         hash_digest = os.urandom(num_bytes)
+        combined_bytes=hash_digest
 
     else:
         # Round the bit length to the nearest hash function
@@ -84,20 +85,28 @@ def generate_random_number(bit_length):
         hash_object = hash_function(mouse_data.encode())
         hash_digest = hash_object.digest()
 
+
         # Získání první poloviny z hash digest
-        first_half_digest = hash_digest[:len(hash_digest) // 2]
+        # first_half_digest = hash_digest[:len(hash_digest) // 2]
         # Získání druhé poloviny z os.urandom
-        num_bytes = (bit_length + 7) // 8
-        second_half_random = os.urandom(num_bytes // 2)
-        # Zřetězení první poloviny s druhou polovinou
-        combined_bytes = first_half_digest + second_half_random
+        # num_bytes = (bit_length + 7) // 8
+        # second_half_random = os.urandom(num_bytes // 2)
+
+        # Ensure that the hash digest is truncated or padded to match half of the desired bit length
+        half_bit_length = bit_length // 2
+        digest_length = (half_bit_length + 7) // 8  # Convert bit length to byte length
+        truncated_digest = hash_digest[:digest_length]
+
+        # Generate the second half of the combined bytes using os.urandom
+        remaining_bit_length = bit_length - len(truncated_digest) * 8
+        num_bytes_needed = (remaining_bit_length + 7) // 8
+        second_half_random = os.urandom(num_bytes_needed)
+
+        # Combine the truncated hash digest with the second half of os.urandom bytes
+        combined_bytes = truncated_digest + second_half_random
 
     # Convert the hash to an integer
     random_integer = int.from_bytes(combined_bytes, byteorder='big')
-
-    # Ensure the number of bits matches the specified bit length
-    # random_integer &= (1 << rounded_bit_length) - 1
-
     return random_integer
 
 def round_to_nearest_hash_function(bit_length):
@@ -131,21 +140,9 @@ while (True):
             bit_length = int(input("Enter the desired bit length for the random number: "))
             # Generate a random number with the specified bit length
 
-            random_number = None
-            while not is_prime(random_number):
-                random_number = generate_random_number(bit_length)
+            random_number = generate_random_number(bit_length)
             print(f"Random number with {bit_length} bits: {random_number}")
-            print("The generated number is prime.")
             break
-
-        elif choose_an_action == 2:
-            logging.info("Chosen action -> Create number with mouse movement")
-            duration = random.randint(4, 15) + random.random()  # Doba sběru dat v sekundách
-            print(f"Sbírám data o pohybu myši po dobu {duration} sekund...")
-            mouse_data = mouse_movement_entropy(duration)
-            mouse_data = mouse_data.encode()
-            hash = hashlib.sha3_512(mouse_data)
-            print(f"Hashed pohyb myši: {hash.hexdigest()}")
 
         elif choose_an_action == 3:
             # Export cisla do souboru .txt, bude se muset otevrit okno File exploreru, tak jak kdyz se vybira soubor k narati treba na Moodle
@@ -159,15 +156,13 @@ while (True):
                 print("Generated number was written into file.")
                 logging.info("{} writted into a file".format(generatedNumber))
                 log_timestamp()
+            break
         elif choose_an_action == 4:
             # Import cisla ze souboru + otestovani prvociselnosti
             logging.info("Chosen action -> \'Import number from a file(bin/txt)\'")
 
-
             def is_file_empty(file_path):
                 return os.path.exists(file_path) and os.stat(file_path).st_size == 0
-
-
             file_path = "generated_numbers.txt"
             is_empty = is_file_empty(file_path)
             if is_empty:
@@ -181,6 +176,7 @@ while (True):
                     if i.isdigit():
                         number_in_file = int(i)
                         print("Generated number from file: ", number_in_file)
+            break
 
 
 
