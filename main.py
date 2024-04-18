@@ -213,7 +213,7 @@ while choose_an_action != 0:
                 print("Block frequency test:")
                 blocksize = max(math.ceil(0.0125 * len(bitRepresent)), 4)
                 if blocksize >= 20:
-                    sts = prngtest.blockfreq(bitRepresent, None)
+                    sts = prngtest.blockfreq(bitRepresent, blocksize)
                     print(sts)
                     resultPresenting(sts[1])
                 else:
@@ -228,17 +228,11 @@ while choose_an_action != 0:
                 else:
                     print("This number is too small for this test. Bit length needs to be greater than 1024b\n")
 
-                print("notm")
-                blocksize = max(math.ceil(0.0125 * len(bitRepresent)), 4)
-                tempsize = min(max(blocksize // 3, 1), 10)
-                if tempsize >= 9:
-                    sts = prngtest.notm(bitRepresent, None, None)
-                else:
-                    print(f"This number has too small tempsize. The number has to be greater than 2200b\n")
-
                 print("otm")
                 if len(bitRepresent) >= 288:
-                    print(prngtest.otm(bitRepresent, None, None))
+                    sts = prngtest.otm(bitRepresent, None, None)
+                    print(sts)
+                    resultPresenting(sts[1])
                 else:
                     print("This number is too small for this test. Bit length needs to be greater than 288b\n")
 
