@@ -17,6 +17,8 @@ import hashlib
 import time
 import os
 import inspect
+import prngtest
+import math
 
 print(os.path.dirname(inspect.getfile(inspect)) + "/site-packages")
 
@@ -48,6 +50,11 @@ def mouse_movement_entropy(duration):
     print(data)
     return data
 
+def resultPresenting(p):
+    if (p > 0.01):
+        print("Number is consider as RANDOM \n")
+    else:
+        print("Numbere is NOT RANDOM\n")
 def get_hash_function(bit_length):
     """Get the appropriate hash function based on the bit length."""
     if bit_length == 128:
@@ -107,6 +114,7 @@ def generate_random_number(bit_length):
 
     # Convert the hash to an integer
     random_integer = int.from_bytes(combined_bytes, byteorder='big')
+    random_integer &= (1 << bit_length) - 1
     return random_integer
 
 def round_to_nearest_hash_function(bit_length):
@@ -142,6 +150,77 @@ while (True):
 
             random_number = generate_random_number(bit_length)
             print(f"Random number with {bit_length} bits: {random_number}")
+            bitRepresent = bin(random_number)[2:]
+            print(f" Number in bits: {bitRepresent}")
+
+
+            print("Monobit:")
+            print(prngtest.monobit(bitRepresent))
+            sts = prngtest.monobit(bitRepresent)
+            resultPresenting(sts[1])
+
+            print("Runs:")
+            print(prngtest.runs(bitRepresent))
+            resultPresenting(sts[1])
+
+            print("Block frequency test:")
+            blocksize = max(math.ceil(0.0125 * len(bitRepresent)), 4)
+            if blocksize >= 20:
+                print(prngtest.blockfreq(bitRepresent, None))
+                resultPresenting(sts[1])
+            else:
+                print(
+                    f"This number has too small blocksize for this test. Blocksize is {blocksize} needs to be 20 or more (bit length needs to be greater than 1700b)\n")
+
+            print("Spectral")
+            if len(bitRepresent) > 1024:
+                print(prngtest.spectral(bitRepresent))
+            else:
+                print("This number is too small for this test. Bit length needs to be greater than 1024b\n")
+
+            print("notm")
+            blocksize = max(math.ceil(0.0125 * len(bitRepresent)), 4)
+            tempsize = min(max(blocksize // 3, 1), 10)
+            if tempsize >= 9:
+                print(prngtest.notm(bitRepresent, None, None))
+            else:
+                print(f"This number has too small tempsize. The number has to be greater than 2200b\n")
+
+            print("otm")
+            if len(bitRepresent) >= 288:
+                print(prngtest.otm(bitRepresent, None, None))
+            else:
+                print("This number is too small for this test. Bit length needs to be greater than 288b\n")
+
+            print("universal")
+            if len(bitRepresent) >= 400000:
+                print(prngtest.universal(bitRepresent, None, None))
+            else:
+                print("This number is too small for this test. Bit length needs to be greater than 400000 b\n")
+
+            print("complexity")
+            if len(bitRepresent) >= 1000000:
+                print(prngtest.complexity(bitRepresent, None))
+            else:
+                print("This number is too small for this test. Bit length needs to be greater than 1mil b\n")
+
+            print("serial")  # 2 OUTPUT
+            print(prngtest.serial(bitRepresent, None))
+
+            print("cumsum - NON REVERSE")
+            print(prngtest.cumsum(bitRepresent, False))
+
+            print("cumsum - Reverse")
+            print(prngtest.cumsum(bitRepresent, True))
+
+            print("Longest runs:")
+            if len(bitRepresent) >= 128:
+                print(prngtest.blockruns(bitRepresent))
+            else:
+                print("This number is too small for this test. Bit length needs to be greater than 128b\n")
+
+
+
             break
 
         elif choose_an_action == 3:
@@ -177,7 +256,6 @@ while (True):
                         number_in_file = int(i)
                         print("Generated number from file: ", number_in_file)
             break
-
 
 
 
