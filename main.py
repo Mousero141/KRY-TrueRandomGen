@@ -17,8 +17,9 @@ import hashlib
 import time
 import os
 import inspect
-import prngtest
 import math
+import prngtest
+
 
 print(os.path.dirname(inspect.getfile(inspect)) + "/site-packages")
 
@@ -112,9 +113,11 @@ def generate_random_number(bit_length):
         # Combine the truncated hash digest with the second half of os.urandom bytes
         combined_bytes = truncated_digest + second_half_random
 
+    combined_bytes += b'\x00' * ((bit_length + 7) // 8 - len(combined_bytes))
+
     # Convert the hash to an integer
     random_integer = int.from_bytes(combined_bytes, byteorder='big')
-    random_integer &= (1 << bit_length) - 1
+    random_integer &= (1 << (bit_length - 1)) - 1
     return random_integer
 
 def round_to_nearest_hash_function(bit_length):
