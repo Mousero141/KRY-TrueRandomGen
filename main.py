@@ -15,6 +15,7 @@ import os
 import inspect
 import math
 import prngtest
+import dieharder
 
 
 print(os.path.dirname(inspect.getfile(inspect)) + "/site-packages")
@@ -62,7 +63,7 @@ def resultPresenting(p):
     if (p > 0.01):
         print("Number is consider as RANDOM")
     else:
-        print("Numbere is NOT RANDOM")
+        print("Number is NOT RANDOM")
 
 
 def get_hash_function(bit_length):
@@ -203,117 +204,129 @@ while choose_an_action != 0:
 
             if chooseTest == 1:
                 print("You choose NIST STS tests")
-                #try:
-                print(f"Testing number {generatedNumber}\n")
-                bitRepresent = bin(generatedNumber)[2:]
+                try:
+                    print(f"Testing number {generatedNumber}\n")
+                    bitRepresent = bin(generatedNumber)[2:]
 
-                #The focus of this test is the proportion of zeroes and ones for the entire sequence.
-                #The purpose of this test is to determine whether the number of ones and zeros in a sequence are approximately the same as would be expected for a truly random sequence.
-                print("Frequency (Monobit) Test:")
-                sts = prngtest.monobit(bitRepresent)
-                print(sts)
-                resultPresenting(sts[1])
-                print("\n")
-
-                #The focus of this test is the total number of runs in the sequence, where a run is an uninterrupted sequence of identical bits
-                print("Runs Test:")
-                sts = prngtest.runs(bitRepresent)
-                print(sts)
-                resultPresenting(sts[1])
-                print("\n")
-
-                #The focus of the test is the proportion of ones within M-bit blocks.
-                print("Block Frequency Test:")
-                blocksize = max(math.ceil(0.0125 * len(bitRepresent)), 4)
-                if blocksize >= 20:
-                    sts = prngtest.blockfreq(bitRepresent, blocksize)
+                    #The focus of this test is the proportion of zeroes and ones for the entire sequence.
+                    #The purpose of this test is to determine whether the number of ones and zeros in a sequence are approximately the same as would be expected for a truly random sequence.
+                    print("Frequency (Monobit) Test:")
+                    sts = prngtest.monobit(bitRepresent)
                     print(sts)
                     resultPresenting(sts[1])
                     print("\n")
-                else:
-                    print(
-                        f"This number has too small blocksize for this test. Blocksize is {blocksize} needs to be 20 or more (bit length needs to be greater than 1700b)\n")
 
-                #The focus of this test is the peak heights in the Discrete Fourier Transform of the sequence.
-                #The purpose of this test is to detect periodic features (i.e., repetitive patterns that are near each other) in the tested sequence that would indicate a deviation from the assumption of randomness.
-                print("Discrete Fourier Transform (Spectral) Test")
-                if len(bitRepresent) >= 1024:
-                    sts = prngtest.spectral(bitRepresent)
+                    #The focus of this test is the total number of runs in the sequence, where a run is an uninterrupted sequence of identical bits
+                    print("Runs Test:")
+                    sts = prngtest.runs(bitRepresent)
                     print(sts)
                     resultPresenting(sts[1])
                     print("\n")
-                else:
-                    print("This number is too small for this test. Bit length needs to be greater than 1024b\n")
 
-                #Overlapping matches to template per block is compared to expected result
-                print("Overlapping Template Matching Test")
-                if len(bitRepresent) >= 288:
-                    sts = prngtest.otm(bitRepresent, None, None)
+                    #The focus of the test is the proportion of ones within M-bit blocks.
+                    print("Block Frequency Test:")
+                    blocksize = max(math.ceil(0.0125 * len(bitRepresent)), 4)
+                    if blocksize >= 20:
+                        sts = prngtest.blockfreq(bitRepresent, blocksize)
+                        print(sts)
+                        resultPresenting(sts[1])
+                        print("\n")
+                    else:
+                        print(
+                            f"This number has too small blocksize for this test. Blocksize is {blocksize} needs to be 20 or more (bit length needs to be greater than 1700b)\n")
+
+                    #The focus of this test is the peak heights in the Discrete Fourier Transform of the sequence.
+                    #The purpose of this test is to detect periodic features (i.e., repetitive patterns that are near each other) in the tested sequence that would indicate a deviation from the assumption of randomness.
+                    print("Discrete Fourier Transform (Spectral) Test")
+                    if len(bitRepresent) >= 1024:
+                        sts = prngtest.spectral(bitRepresent)
+                        print(sts)
+                        resultPresenting(sts[1])
+                        print("\n")
+                    else:
+                        print("This number is too small for this test. Bit length needs to be greater than 1024b\n")
+
+                    #Overlapping matches to template per block is compared to expected result
+                    print("Overlapping Template Matching Test")
+                    if len(bitRepresent) >= 288:
+                        sts = prngtest.otm(bitRepresent, None, None)
+                        print(sts)
+                        resultPresenting(sts[1])
+                        print("\n")
+                    else:
+                        print("This number is too small for this test. Bit length needs to be greater than 288b\n")
+                    #The focus of this test is the number of bits between matching patterns.
+
+                    print("Maurer’s “Universal Statistical” Test ")
+                    if len(bitRepresent) >= 400000:
+                        sts = prngtest.universal(bitRepresent, None, None)
+                        print(sts)
+                        resultPresenting(sts[1])
+                        print("\n")
+                    else:
+                        print("This number is too small for this test. Bit length needs to be greater than 400000 b\n")
+
+                    #The focus of this test is the length of a linear feedback shift register (LFSR).
+                    print("Linear Complexity Test")
+                    if len(bitRepresent) >= 1000000:
+                        sts = prngtest.complexity(bitRepresent, None)
+                        print(sts)
+                        resultPresenting(sts[1])
+                        print("\n")
+                    else:
+                        print("This number is too small for this test. Bit length needs to be greater than 1mil b\n")
+
+                    #The focus of this test is the frequency of all possible overlapping m-bit patterns across the entire sequence.
+                    print("Serial Test")  # 2 OUTPUT
+                    sts = prngtest.serial(bitRepresent, None)
+                    print(sts)
+                    resultPresenting(sts[0][1])
+                    resultPresenting(sts[1][1])
+
+                    print("\n")
+
+                    #The focus of this test is the maximal excursion (from zero) of the random walk defined by the cumulative sum of adjusted (-1, +1) digits in the sequence
+                    print("Cumulative Sums (Cusum) Test")
+                    sts = prngtest.cumsum(bitRepresent, False)
                     print(sts)
                     resultPresenting(sts[1])
                     print("\n")
-                else:
-                    print("This number is too small for this test. Bit length needs to be greater than 288b\n")
-                #The focus of this test is the number of bits between matching patterns.
 
-                print("Maurer’s “Universal Statistical” Test ")
-                if len(bitRepresent) >= 400000:
-                    sts = prngtest.universal(bitRepresent, None, None)
+
+                    print("Cumulative Sums (Cusum) Test - REVERSE")
+                    sts = prngtest.cumsum(bitRepresent, True)
                     print(sts)
                     resultPresenting(sts[1])
                     print("\n")
-                else:
-                    print("This number is too small for this test. Bit length needs to be greater than 400000 b\n")
 
-                #The focus of this test is the length of a linear feedback shift register (LFSR).
-                print("Linear Complexity Test")
-                if len(bitRepresent) >= 1000000:
-                    sts = prngtest.complexity(bitRepresent, None)
-                    print(sts)
-                    resultPresenting(sts[1])
-                    print("\n")
-                else:
-                    print("This number is too small for this test. Bit length needs to be greater than 1mil b\n")
-
-                #The focus of this test is the frequency of all possible overlapping m-bit patterns across the entire sequence.
-                print("Serial Test")  # 2 OUTPUT
-                sts = prngtest.serial(bitRepresent, None)
-                print(sts)
-                resultPresenting(sts[0][1])
-                resultPresenting(sts[1][1])
-
-                print("\n")
-
-                #The focus of this test is the maximal excursion (from zero) of the random walk defined by the cumulative sum of adjusted (-1, +1) digits in the sequence
-                print("Cumulative Sums (Cusum) Test")
-                sts = prngtest.cumsum(bitRepresent, False)
-                print(sts)
-                resultPresenting(sts[1])
-                print("\n")
-
-
-                print("Cumulative Sums (Cusum) Test - REVERSE")
-                sts = prngtest.cumsum(bitRepresent, True)
-                print(sts)
-                resultPresenting(sts[1])
-                print("\n")
-
-                print("Longest runs:")
-                if len(bitRepresent) >= 128:
-                    sts = prngtest.blockruns(bitRepresent)
-                    print(sts)
-                    resultPresenting(sts[1])
-                    print("\n")
-                else:
-                    print("This number is too small for this test. Bit length needs to be greater than 128b\n")
-                #except:
-                    #print("Please generate or load number before testing!")
+                    print("Longest runs:")
+                    if len(bitRepresent) >= 128:
+                        sts = prngtest.blockruns(bitRepresent)
+                        print(sts)
+                        resultPresenting(sts[1])
+                        print("\n")
+                    else:
+                        print("This number is too small for this test. Bit length needs to be greater than 128b\n")
+                except:
+                    print("Please generate or load number before testing!")
 
             elif chooseTest == 2:
-                print("You choose Diedharder tests")
-                birthday_spacing_test(n_numbers=bit_length, range_interval=bit_length)
+                try:
+                    print("You choose Diedharder tests\n")
+                    print(f"Testing number {generatedNumber}\n")
+                    bitRepresent = bin(generatedNumber)[2:]
 
-
+                    print("Birthday Spacing Test")
+                    dieharder.birthday_spacing_test(n_numbers=bit_length, range_interval=bit_length)
+                    print("\n")
+                    print("Diehard Runs Test")
+                    dieharder.diehard_runs_test(bitRepresent)
+                    print("\n")
+                    rank = dieharder.binary_rank_test(generatedNumber, bit_length)
+                    print(f"Rank: {rank}, less number is better")
+                    print("\n")
+                except:
+                    print("Please generate or load number before testing!")
 
             continue
         elif choose_an_action == 4:
@@ -336,12 +349,13 @@ while choose_an_action != 0:
             print("Warning: For security reasons, it is recommended to use bit lengths of 128 or more.")
             bit_length = int(input("Enter the desired bit length for the random number: "))
 
-            # Generate a random number with the specified bit length
-            duration = random.randint(0, 0) + random.random()  # Duration in seconds
-            print(f"Gathering mouse movement data for {duration} seconds...")
-            mouse_data = mouse_movement_entropy(duration)
             counter = 0
             if (bit_length >= 288):
+                # Generate a random number with the specified bit length
+                # Duration in seconds
+                duration = random.randint(0, 0) + random.random()
+                print(f"Gathering mouse movement data for {duration} seconds...")
+                mouse_data = mouse_movement_entropy(duration)
                 while (True):
                     random_number = generate_random_number(bit_length, mouse_data)
                     bitRepresent = bin(random_number)[2:]
@@ -355,7 +369,6 @@ while choose_an_action != 0:
                         print(f"Not able to generate random number with {bit_length} bits")
                         break
             else:
-                random_number = generate_random_number(bit_length, mouse_data)
-                generatedNumber = random_number
+                print("To make sure the number will be truly random,the bit length needs to be more then 288b")
 
             continue

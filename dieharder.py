@@ -17,11 +17,48 @@ def birthday_spacing_test(n_numbers: int, range_interval: float):
     # Conduct the Kolmogorov-Smirnov test to compare the empirical and theoretical distributions
     ks_statistic, p_value = kstest(spacings, 'expon', args=params)
 
-    print("KS Statistic:", ks_statistic)
-    print("P-value:", p_value)
 
     if p_value > 0.05:
-        print(
-            "We fail to reject the null hypothesis, this means that the random generator produces uniformly distributed spacings")
+        print(f"P-value is: {p_value}. Number is consider as RANDOM")
     else:
-        print("The random generator is not random")
+        print(f"P-value is: {p_value}. Number is NOT RANDOM")
+
+
+def diehard_runs_test(data):
+    runs = []
+    current_run = 1
+    for i in range(1, len(data)):
+        if data[i] == data[i - 1]:
+            current_run += 1
+        else:
+            runs.append(current_run)
+            current_run = 1
+    runs.append(current_run)
+
+    n = len(data)
+    expected_mean = (2 * n - 1) / 3
+    expected_variance = (16 * n - 29) / 90
+    pvalue = (sum(runs) - expected_mean) / (expected_variance ** 0.5)
+
+    # Two-tailed test, assuming normal distribution
+    # You can adjust the significance level (alpha) as needed
+    alpha = 0.05
+    critical_value = 1.96  # For alpha = 0.05
+
+    if abs(pvalue) > critical_value:
+        return print(f"P-value is: {pvalue}. Number is consider as RANDOM")
+    else:
+        return print(f"P-value is: {pvalue}. Number is NOT RANDOM")
+
+
+def binary_rank_test(random_number, bit_length):
+    # Convert the random number to its binary representation
+    binary_string = bin(random_number)[2:].zfill(bit_length)
+
+    # Count the consecutive blocks of 1s and 0s in the binary string
+    ones_blocks = [len(block) for block in binary_string.split('0') if block]  # Lengths of consecutive blocks of 1s
+    zeros_blocks = [len(block) for block in binary_string.split('1') if block]  # Lengths of consecutive blocks of 0s
+    rank = max(max(ones_blocks, default=0), max(zeros_blocks, default=0))
+
+    #Larger rank means worse randomness
+    return rank
