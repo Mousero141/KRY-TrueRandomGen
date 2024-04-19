@@ -1,6 +1,7 @@
 # import large_prime_generation as primes
 import sys
 from operator import ge
+from random import random
 
 import pyautogui as pyautogui
 import time
@@ -49,12 +50,18 @@ def mouse_movement_entropy(duration):
     print(data)
     return data
 
+def numberControl(n):
+    sts = prngtest.otm(n, None)
+    if(sts[1] > 0.01):
+        return True
+    else:
+        False
 
 def resultPresenting(p):
     if (p > 0.01):
-        print("Number is consider as RANDOM \n")
+        print("Number is consider as RANDOM")
     else:
-        print("Numbere is NOT RANDOM\n")
+        print("Numbere is NOT RANDOM")
 
 
 def get_hash_function(bit_length):
@@ -71,7 +78,7 @@ def get_hash_function(bit_length):
         raise ValueError("Unsupported bit length for hash function")
 
 
-def generate_random_number(bit_length):
+def generate_random_number(bit_length, mouse_data):
     """Generate a random number with the specified bit length."""
     # Check if bit_length is less than 128
     # Check if bit_length is less than 128
@@ -88,10 +95,9 @@ def generate_random_number(bit_length):
         # Pevný časový interval na základě současného času
         current_time = int(time.time())
         #duration = current_time % 10 + 5  # Pevný časový interval mezi 5 a 15 sekundami
-        duration = random.randint(0, 0) + random.random()  # Duration in seconds
+        #duration = random.randint(0, 0) + random.random()  # Duration in seconds
 
-        print(f"Gathering mouse movement data for {duration} seconds...")
-        mouse_data = mouse_movement_entropy(duration)
+
         hash_function = get_hash_function(rounded_bit_length)
         hash_object = hash_function(mouse_data.encode())
         hash_digest = hash_object.digest()
@@ -139,11 +145,11 @@ def is_file_empty(file_path):
     return os.path.exists(file_path) and os.stat(file_path).st_size == 0
 
 
-print("1 - Generate new prime number")
+print("1 - Generate new number for testing")
 print("2 - Import number from file")
 print("3 - Test number")
 print("4 - Export generated number to file")
-print("5 - XXXXXXXXXXXX")
+print("5 - Generate number truly random number")
 print("0 - Exit\n")
 
 while choose_an_action != 0:
@@ -159,9 +165,16 @@ while choose_an_action != 0:
 
             print("Warning: For security reasons, it is recommended to use bit lengths of 128 or more.")
             bit_length = int(input("Enter the desired bit length for the random number: "))
-            # Generate a random number with the specified bit length
 
-            random_number = generate_random_number(bit_length)
+            # Generate a random number with the specified bit length
+            duration = random.randint(0, 0) + random.random()  # Duration in seconds
+            print(f"Gathering mouse movement data for {duration} seconds...")
+            mouse_data = mouse_movement_entropy(duration)
+
+            counter = 0
+            random_number = generate_random_number(bit_length, mouse_data)
+
+
             #print(f"Random number with {bit_length} bits: {random_number}")
             if len(str(random_number)) > 199:
                 print(f"Random number with {bit_length} bits: {str(random_number)[:200]}..")
@@ -196,76 +209,106 @@ while choose_an_action != 0:
             if chooseTest == 1:
                 print("You choose NIST STS tests")
                 #try:
-                print(f"Testing number {generatedNumber}")
+                print(f"Testing number {generatedNumber}\n")
                 bitRepresent = bin(generatedNumber)[2:]
 
-
-                print("Monobit:")
+                #The focus of this test is the proportion of zeroes and ones for the entire sequence.
+                #The purpose of this test is to determine whether the number of ones and zeros in a sequence are approximately the same as would be expected for a truly random sequence.
+                print("Frequency (Monobit) Test:")
                 sts = prngtest.monobit(bitRepresent)
                 print(sts)
                 resultPresenting(sts[1])
+                print("\n")
 
-                print("Runs:")
+                #The focus of this test is the total number of runs in the sequence, where a run is an uninterrupted sequence of identical bits
+                print("Runs Test:")
                 sts = prngtest.runs(bitRepresent)
                 print(sts)
                 resultPresenting(sts[1])
+                print("\n")
 
-                print("Block frequency test:")
+                #The focus of the test is the proportion of ones within M-bit blocks.
+                print("Block Frequency Test:")
                 blocksize = max(math.ceil(0.0125 * len(bitRepresent)), 4)
                 if blocksize >= 20:
-                    sts = prngtest.blockfreq(bitRepresent, None)
+                    sts = prngtest.blockfreq(bitRepresent, blocksize)
                     print(sts)
                     resultPresenting(sts[1])
+                    print("\n")
                 else:
                     print(
                         f"This number has too small blocksize for this test. Blocksize is {blocksize} needs to be 20 or more (bit length needs to be greater than 1700b)\n")
 
-                print("Spectral")
-                if len(bitRepresent) > 1024:
+                #The focus of this test is the peak heights in the Discrete Fourier Transform of the sequence.
+                #The purpose of this test is to detect periodic features (i.e., repetitive patterns that are near each other) in the tested sequence that would indicate a deviation from the assumption of randomness.
+                print("Discrete Fourier Transform (Spectral) Test")
+                if len(bitRepresent) >= 1024:
                     sts = prngtest.spectral(bitRepresent)
                     print(sts)
                     resultPresenting(sts[1])
+                    print("\n")
                 else:
                     print("This number is too small for this test. Bit length needs to be greater than 1024b\n")
 
-                print("notm")
-                blocksize = max(math.ceil(0.0125 * len(bitRepresent)), 4)
-                tempsize = min(max(blocksize // 3, 1), 10)
-                if tempsize >= 9:
-                    sts = prngtest.notm(bitRepresent, None, None)
-                else:
-                    print(f"This number has too small tempsize. The number has to be greater than 2200b\n")
-
-                print("otm")
+                #Overlapping matches to template per block is compared to expected result
+                print("Overlapping Template Matching Test")
                 if len(bitRepresent) >= 288:
-                    print(prngtest.otm(bitRepresent, None, None))
+                    sts = prngtest.otm(bitRepresent, None, None)
+                    print(sts)
+                    resultPresenting(sts[1])
+                    print("\n")
                 else:
                     print("This number is too small for this test. Bit length needs to be greater than 288b\n")
+                #The focus of this test is the number of bits between matching patterns.
 
-                print("universal")
+                print("Maurer’s “Universal Statistical” Test ")
                 if len(bitRepresent) >= 400000:
-                    print(prngtest.universal(bitRepresent, None, None))
+                    sts = prngtest.universal(bitRepresent, None, None)
+                    print(sts)
+                    resultPresenting(sts[1])
+                    print("\n")
                 else:
                     print("This number is too small for this test. Bit length needs to be greater than 400000 b\n")
 
-                print("complexity")
+                #The focus of this test is the length of a linear feedback shift register (LFSR).
+                print("Linear Complexity Test")
                 if len(bitRepresent) >= 1000000:
-                    print(prngtest.complexity(bitRepresent, None))
+                    sts = prngtest.complexity(bitRepresent, None)
+                    print(sts)
+                    resultPresenting(sts[1])
+                    print("\n")
                 else:
                     print("This number is too small for this test. Bit length needs to be greater than 1mil b\n")
 
-                print("serial")  # 2 OUTPUT
-                print(prngtest.serial(bitRepresent, None))
+                #The focus of this test is the frequency of all possible overlapping m-bit patterns across the entire sequence.
+                print("Serial Test")  # 2 OUTPUT
+                sts = prngtest.serial(bitRepresent, None)
+                print(sts)
+                resultPresenting(sts[0][1])
+                resultPresenting(sts[1][1])
 
-                print("cumsum - NON REVERSE")
-                print(prngtest.cumsum(bitRepresent, False))
+                print("\n")
 
-                print("cumsum - Reverse")
-                print(prngtest.cumsum(bitRepresent, True))
+                #The focus of this test is the maximal excursion (from zero) of the random walk defined by the cumulative sum of adjusted (-1, +1) digits in the sequence
+                print("Cumulative Sums (Cusum) Test")
+                sts = prngtest.cumsum(bitRepresent, False)
+                print(sts)
+                resultPresenting(sts[1])
+                print("\n")
+
+
+                print("Cumulative Sums (Cusum) Test - REVERSE")
+                sts = prngtest.cumsum(bitRepresent, True)
+                print(sts)
+                resultPresenting(sts[1])
+                print("\n")
 
                 print("Longest runs:")
                 if len(bitRepresent) >= 128:
-                    print(prngtest.blockruns(bitRepresent))
+                    sts = prngtest.blockruns(bitRepresent)
+                    print(sts)
+                    resultPresenting(sts[1])
+                    print("\n")
                 else:
                     print("This number is too small for this test. Bit length needs to be greater than 128b\n")
                 #except:
@@ -278,16 +321,43 @@ while choose_an_action != 0:
         elif choose_an_action == 4:
             # Export cisla do souboru .txt, bude se muset otevrit okno File exploreru, tak jak kdyz se vybira soubor k narati treba na Moodle
             logging.info("Chosen action -> Export number to file")
-            if (number == 0):
-                print("Number was not generated. If you want generate number press 1")
+            if generatedNumber == 0 or None:
+                print("Number was not generated. If you want generate number press 1 or 5")
             else:
                 with open("generated_numbers.txt", "a", encoding="utf-8") as f:
                     f.write("\n")
-                    f.write(generatedNumber)
+                    f.write(str(generatedNumber))
                 print("Generated number was written into file.")
                 logging.info("{} writted into a file".format(generatedNumber))
                 log_timestamp()
-            break
+            continue
         elif choose_an_action == 5:
+            logging.info("Chosen action -> \'Generate true random number\'")
+            log_timestamp()
+
+            print("Warning: For security reasons, it is recommended to use bit lengths of 128 or more.")
+            bit_length = int(input("Enter the desired bit length for the random number: "))
+
+            # Generate a random number with the specified bit length
+            duration = random.randint(0, 0) + random.random()  # Duration in seconds
+            print(f"Gathering mouse movement data for {duration} seconds...")
+            mouse_data = mouse_movement_entropy(duration)
+            counter = 0
+            if (bit_length >= 288):
+                while (True):
+                    random_number = generate_random_number(bit_length, mouse_data)
+                    bitRepresent = bin(random_number)[2:]
+                    counter += 1
+                    if numberControl(bitRepresent):
+                        generatedNumber = random_number
+                        print(f"Random number with {bit_length} bits: {str(random_number)[:200]}..")
+                        break
+                    elif counter > 100000:
+                        generatedNumber = None
+                        print(f"Not able to generate random number with {bit_length} bits")
+                        break
+            else:
+                random_number = generate_random_number(bit_length, mouse_data)
+                generatedNumber = random_number
 
             continue

@@ -1,3 +1,12 @@
+"""
+SINCE WE HAD PROBLEM WITH PIP INSTALL THIS LIBRARY, WE USED IT AS ANOTHER FILE IN OUR PROJECT.
+INSTALLATION VIA PIP WAS NOT WORKING PROPERLY - IT INSTALLED A VERSION WHICH IS BEHIND TO THE UP-TO-DATE ONE.
+
+CREDIT FOR THIS RNG TEST SUIT IS FOR: https://github.com/honno/prngtest
+
+"""
+
+
 from argparse import ArgumentParser, FileType
 from bisect import bisect_left
 from collections import defaultdict
