@@ -46,9 +46,9 @@ def diehard_runs_test(data):
     critical_value = 1.96  # For alpha = 0.05
 
     if abs(pvalue) > critical_value:
-        return print(f"P-value is: {pvalue}. Number is consider as RANDOM")
-    else:
         return print(f"P-value is: {pvalue}. Number is NOT RANDOM")
+    else:
+        return print(f"P-value is: {pvalue}. Number is consider as RANDOM")
 
 
 def binary_rank_test(random_number, bit_length):
@@ -62,3 +62,20 @@ def binary_rank_test(random_number, bit_length):
 
     #Larger rank means worse randomness
     return rank
+
+
+def count_ones_test(data):
+    ones_count = data.count('1')
+    n = len(data)
+    expected_ones = n / 2
+    variance = n / 4
+    p_value = (ones_count - expected_ones) / (variance ** 0.5)
+
+    # Two-tailed test, assuming normal distribution
+    alpha = 0.05
+    critical_value = 1.96  # For alpha = 0.05
+
+    if abs(p_value) > critical_value:
+        return print(f"P-value is: {p_value}. Number is NOT RANDOM")
+    else:
+        return print(f"P-value is: {p_value}. Number is consider as RANDOM")
