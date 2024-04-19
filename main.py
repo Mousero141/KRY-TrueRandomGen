@@ -16,6 +16,7 @@ import inspect
 import math
 import prngtest
 
+
 print(os.path.dirname(inspect.getfile(inspect)) + "/site-packages")
 
 number = 0
@@ -134,12 +135,6 @@ def round_to_nearest_hash_function(bit_length):
     hash_functions = [128, 256, 512, 1024]  # List of hash function bit lengths
     nearest_hash = min(hash_functions, key=lambda x: abs(x - bit_length))
     return nearest_hash
-
-
-def is_prime(number):
-    """Check if the given number is prime."""
-    return sympy.isprime(number)
-
 
 def is_file_empty(file_path):
     return os.path.exists(file_path) and os.stat(file_path).st_size == 0
@@ -316,6 +311,9 @@ while choose_an_action != 0:
 
             elif chooseTest == 2:
                 print("You choose Diedharder tests")
+                birthday_spacing_test(n_numbers=bit_length, range_interval=bit_length)
+
+
 
             continue
         elif choose_an_action == 4:
