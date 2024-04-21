@@ -163,6 +163,33 @@ def round_to_nearest_hash_function(bit_length):
     nearest_hash = min(hash_functions, key=lambda x: abs(x - bit_length))
     return nearest_hash
 
+def encryptLog():
+    key = Fernet.generate_key()  # Generate a Fernet key
+    fernet = Fernet(key)  # Initialize a Fernet cipher object with the key
+    with open("log_fernet_key.txt", "wb") as f:  # Save the key to a file
+        f.write(key)
+    with open("test.log", "rb") as f:
+        original = f.read()
+    encryptedFile = fernet.encrypt(original)
+
+    with open("test.log", "wb") as f:
+        f.write(encryptedFile)
+    fileHash = hashlib.sha3_256(encryptedFile)
+    print(f"Log file was successfully encrypted. Hash of the log file is: {fileHash.hexdigest()}")
+
+
+def decryptLog():
+    with open('log_fernet_key.txt', 'rb') as fileKey:
+        key = fileKey.read()
+    fernet = Fernet(key)
+    with open("test.log", "rb") as f:
+        encrypted = f.read()
+    decryptedFile = fernet.decrypt(encrypted)
+
+    with open("test.log", "wb") as f:
+        f.write(decryptedFile)
+    print("Log file was successfully DECRYPTED.")
+
 
 def is_file_empty(file_path):
     return os.path.exists(file_path) and os.stat(file_path).st_size == 0
@@ -175,6 +202,11 @@ print("4 - Export generated number to file")
 print("5 - Generate number truly random number")
 print("0 - Exit\n")
 
+try:
+    decryptLog()
+except:
+    print("File is not encrypted!")
+
 while choose_an_action != 0:
     # V této části uživatel zadá délku prvočísla, které chce vygenerovat.
     try:
@@ -183,7 +215,7 @@ while choose_an_action != 0:
         logging.info("Enter only positive numbers")
     else:
         if choose_an_action == 1:
-            logging.info("Chosen action -> \'Generate new prime number\'")
+            logging.info("Chosen action -> \'Generate new number\'")
             log_timestamp()
 
             print("Warning: For security reasons, it is recommended to use bit lengths of 128 or more.")
@@ -439,5 +471,5 @@ while choose_an_action != 0:
                         break
             else:
                 print("To make sure the number will be truly random,the bit length needs to be more then 288b")
-
             continue
+encryptLog()
