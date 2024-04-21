@@ -1,8 +1,3 @@
-# import large_prime_generation as primes
-import sys
-from operator import ge
-from random import random
-
 import pyautogui as pyautogui
 import logging
 import random
@@ -26,12 +21,12 @@ choose_an_action = 99
 
 print("KRY-True-Random-Generator\n")
 
-log_file = open('test.log', 'a')
+log_file = open('generatorKRY.log', 'a')
 log_file.write('------------------------------------------------------------------------------------------\n')
 log_file.write(time.strftime('%d_%m_%Y--%I_%M_%S_%p\n'))
 log_file.close()
 
-logging.basicConfig(filename='test.log', level=logging.DEBUG)
+logging.basicConfig(filename='generatorKRY.log', level=logging.DEBUG)
 
 
 def log_timestamp():
@@ -154,7 +149,6 @@ def generate_random_number(bit_length, mouse_data):
 
     return random_integer
 
-
 def round_to_nearest_hash_function(bit_length):
     """Round the bit length to the nearest hash function."""
     hash_functions = [128, 256, 512, 1024]  # List of hash function bit lengths
@@ -166,11 +160,11 @@ def encryptLog():
     fernet = Fernet(key)  # Initialize a Fernet cipher object with the key
     with open("log_fernet_key.txt", "wb") as f:  # Save the key to a file
         f.write(key)
-    with open("test.log", "rb") as f:
+    with open("generatorKRY.log", "rb") as f:
         original = f.read()
     encryptedFile = fernet.encrypt(original)
 
-    with open("test.log", "wb") as f:
+    with open("generatorKRY.log", "wb") as f:
         f.write(encryptedFile)
     fileHash = hashlib.sha3_256(encryptedFile)
     print(f"Log file was successfully encrypted. Hash of the log file is: {fileHash.hexdigest()}")
@@ -180,25 +174,29 @@ def decryptLog():
     with open('log_fernet_key.txt', 'rb') as fileKey:
         key = fileKey.read()
     fernet = Fernet(key)
-    with open("test.log", "rb") as f:
+    with open("generatorKRY.log", "rb") as f:
         encrypted = f.read()
     decryptedFile = fernet.decrypt(encrypted)
 
-    with open("test.log", "wb") as f:
+    with open("generatorKRY.log", "wb") as f:
         f.write(decryptedFile)
     print("Log file was successfully DECRYPTED.")
+
+def printMenu():
+    print("1 - Generate new number for testing")
+    print("2 - Import number from file")
+    print("3 - Test number")
+    print("4 - Export generated number to file")
+    print("5 - Generate number truly random number")
+    print("0 - Exit\n")
+
+
 
 
 def is_file_empty(file_path):
     return os.path.exists(file_path) and os.stat(file_path).st_size == 0
 
-
-print("1 - Generate new number for testing")
-print("2 - Import number from file")
-print("3 - Test number")
-print("4 - Export generated number to file")
-print("5 - Generate number truly random number")
-print("0 - Exit\n")
+printMenu()
 
 try:
     decryptLog()
@@ -227,9 +225,7 @@ while choose_an_action != 0:
             mouse_data = mouse_movement_entropy(duration)
 
             counter = 0
-            print(time.time())
             random_number = generate_random_number(bit_length, mouse_data)
-            print(time.time())
             # print(f"Random number with {bit_length} bits: {random_number}")
             if len(str(random_number)) > 199:
                 print(f"Random number with {bit_length} bits: {str(random_number)[:200]}..")
@@ -240,6 +236,7 @@ while choose_an_action != 0:
                 logging.info(f"Random number with {bit_length} bits: {str(random_number)[:200]}..")
                 log_timestamp()
             generatedNumber = random_number
+            printMenu()
             continue
 
         elif choose_an_action == 2:
@@ -268,6 +265,7 @@ while choose_an_action != 0:
                             generatedNumber = number_in_file
                 logging.info(f"Number was imported {generatedNumber}")
                 log_timestamp()
+                printMenu()
                 continue
             elif chooseImport == 2:
                 with open("fernet_key.txt", "rb") as f:
@@ -285,6 +283,7 @@ while choose_an_action != 0:
                     generatedNumber = decrypted_number
                     logging.info(f"Number was imported {generatedNumber}")
                     log_timestamp()
+                printMenu()
                 continue
 
         elif choose_an_action == 3:
@@ -299,7 +298,6 @@ while choose_an_action != 0:
                 try:
                     print(f"Testing number {generatedNumber}\n")
                     bitRepresent = bin(generatedNumber)[2:]
-
                     # The focus of this test is the proportion of zeroes and ones for the entire sequence.
                     # The purpose of this test is to determine whether the number of ones and zeros in a sequence are approximately the same as would be expected for a truly random sequence.
                     print("Frequency (Monobit) Test:")
@@ -432,7 +430,8 @@ while choose_an_action != 0:
                         print("This number is too small for this test. Bit length needs to be greater than 128b\n")
                 except:
                     print("Please generate or load number before testing!")
-
+                printMenu()
+                continue
             elif chooseTest == 2:
                 try:
                     print("You choose Diedharder tests\n")
@@ -472,7 +471,7 @@ while choose_an_action != 0:
                     print("\n")
                 except:
                     print("Please generate or load number before testing!")
-
+            printMenu()
             continue
         elif choose_an_action == 4:
             # Export cisla do souboru .txt, bude se muset otevrit okno File exploreru, tak jak kdyz se vybira soubor k narati treba na Moodle
@@ -500,6 +499,7 @@ while choose_an_action != 0:
 
                 logging.info("{} writted into a file".format(generatedNumber))
                 log_timestamp()
+            printMenu()
             continue
         elif choose_an_action == 5:
             logging.info("Chosen action -> \'Generate true random number\'")
@@ -516,7 +516,6 @@ while choose_an_action != 0:
                 duration = random.randint(10, 25) + random.random()
                 print(f"Gathering mouse movement data for {duration} seconds...")
                 mouse_data = mouse_movement_entropy(duration)
-                print(time.time())
                 while (True):
                     random_number = generate_random_number(bit_length, mouse_data)
                     bitRepresent = bin(random_number)[2:]
@@ -525,7 +524,6 @@ while choose_an_action != 0:
                         generatedNumber = random_number
                         print(f"Random number with {bit_length} bits: {str(random_number)[:200]}..")
                         logging.info(f"Random number with {bit_length} bits: {str(random_number)[:200]}..")
-                        print(time.time())
                         break
                     elif counter > 200000:
                         generatedNumber = None
@@ -535,5 +533,6 @@ while choose_an_action != 0:
             else:
                 print("To make sure the number will be truly random,the bit length needs to be more then 288b")
                 logging.info("To make sure the number will be truly random,the bit length needs to be more then 288b")
+            printMenu()
             continue
 encryptLog()

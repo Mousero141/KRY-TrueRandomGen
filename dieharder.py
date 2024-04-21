@@ -19,9 +19,9 @@ def birthday_spacing_test(n_numbers: int, range_interval: float):
 
 
     if p_value > 0.05:
-        print(f"P-value is: {p_value}. Number is consider as RANDOM")
+        return f"P-value is: {p_value}. Number is consider as RANDOM"
     else:
-        print(f"P-value is: {p_value}. Number is NOT RANDOM")
+        return f"P-value is: {p_value}. Number is NOT RANDOM"
 
 
 def diehard_runs_test(data):
@@ -46,9 +46,9 @@ def diehard_runs_test(data):
     critical_value = 1.96  # For alpha = 0.05
 
     if abs(pvalue) > critical_value:
-        return print(f"P-value is: {pvalue}. Number is NOT RANDOM")
+        return f"P-value is: {pvalue}. Number is NOT RANDOM"
     else:
-        return print(f"P-value is: {pvalue}. Number is consider as RANDOM")
+        return f"P-value is: {pvalue}. Number is consider as RANDOM"
 
 
 def binary_rank_test(random_number, bit_length):
@@ -76,6 +76,6 @@ def count_ones_test(data):
     critical_value = 1.96  # For alpha = 0.05
 
     if abs(p_value) > critical_value:
-        return print(f"P-value is: {p_value}. Number is NOT RANDOM")
+        return f"P-value is: {p_value}. Number is NOT RANDOM"
     else:
-        return print(f"P-value is: {p_value}. Number is consider as RANDOM")
+        return f"P-value is: {p_value}. Number is consider as RANDOM"
