@@ -45,6 +45,7 @@ def decrypt_number(encrypted_number, cipher):
     # Convert decrypted bytes back to integer
     decrypted_number = int(decrypted_number_bytes.decode())
     return decrypted_number
+
 def mouse_movement_entropy(duration):
     data = ''
     start_time = time.time()
@@ -221,13 +222,14 @@ while choose_an_action != 0:
             logging.info("Generate a random number with the specified bit length")
             log_timestamp()
             # Generate a random number with the specified bit length
-            duration = random.randint(0, 0) + random.random()  # Duration in seconds
+            duration = random.randint(10, 25) + random.random()  # Duration in seconds
             print(f"Gathering mouse movement data for {duration} seconds...")
             mouse_data = mouse_movement_entropy(duration)
 
             counter = 0
+            print(time.time())
             random_number = generate_random_number(bit_length, mouse_data)
-
+            print(time.time())
             # print(f"Random number with {bit_length} bits: {random_number}")
             if len(str(random_number)) > 199:
                 print(f"Random number with {bit_length} bits: {str(random_number)[:200]}..")
@@ -438,6 +440,7 @@ while choose_an_action != 0:
                     bitRepresent = bin(generatedNumber)[2:]
 
                     print("Birthday Spacing Test")
+                    logging.info("Birthday Spacing Test")
                     sts = dieharder.birthday_spacing_test(n_numbers=bit_length, range_interval=bit_length)
                     print(sts)
                     logging.info(sts)
@@ -445,6 +448,7 @@ while choose_an_action != 0:
                     print("\n")
 
                     print("Diehard Runs Test")
+                    logging.info("Diehard Runs Test")
                     sts = dieharder.diehard_runs_test(bitRepresent)
                     print(sts)
                     logging.info(sts)
@@ -452,6 +456,7 @@ while choose_an_action != 0:
                     print("\n")
 
                     print("Binary Rank Test")
+                    logging.info("Binary Rank Test")
                     rank = dieharder.binary_rank_test(generatedNumber, bit_length)
                     print(f"Rank: {rank}, less number is better")
                     logging.info(f"Rank: {rank}, less number is better")
@@ -459,6 +464,7 @@ while choose_an_action != 0:
                     print("\n")
 
                     print("Count Ones test")
+                    logging.info("Count Ones test")
                     sts = dieharder.count_ones_test(bitRepresent)
                     print(sts)
                     logging.info(sts)
@@ -507,9 +513,10 @@ while choose_an_action != 0:
             if (bit_length >= 288):
                 # Generate a random number with the specified bit length
                 # Duration in seconds
-                duration = random.randint(0, 0) + random.random()
+                duration = random.randint(10, 25) + random.random()
                 print(f"Gathering mouse movement data for {duration} seconds...")
                 mouse_data = mouse_movement_entropy(duration)
+                print(time.time())
                 while (True):
                     random_number = generate_random_number(bit_length, mouse_data)
                     bitRepresent = bin(random_number)[2:]
@@ -518,6 +525,7 @@ while choose_an_action != 0:
                         generatedNumber = random_number
                         print(f"Random number with {bit_length} bits: {str(random_number)[:200]}..")
                         logging.info(f"Random number with {bit_length} bits: {str(random_number)[:200]}..")
+                        print(time.time())
                         break
                     elif counter > 200000:
                         generatedNumber = None
