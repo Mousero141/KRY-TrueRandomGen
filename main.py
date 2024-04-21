@@ -16,7 +16,7 @@ import inspect
 import math
 import prngtest
 import dieharder
-
+from cryptography.fernet import Fernet
 
 print(os.path.dirname(inspect.getfile(inspect)) + "/site-packages")
 
@@ -42,6 +42,12 @@ def log_timestamp():
     logging.info(timestamp)
 
 
+def decrypt_number(encrypted_number, cipher):
+    # Decrypt the encrypted number
+    decrypted_number_bytes = cipher.decrypt(encrypted_number)
+    # Convert decrypted bytes back to integer
+    decrypted_number = int(decrypted_number_bytes.decode())
+    return decrypted_number
 def mouse_movement_entropy(duration):
     data = ''
     start_time = time.time()
@@ -52,12 +58,14 @@ def mouse_movement_entropy(duration):
     print(data)
     return data
 
+
 def numberControl(n):
     sts = prngtest.otm(n, None)
-    if(sts[1] > 0.01):
+    if (sts[1] > 0.01):
         return True
     else:
         False
+
 
 def resultPresenting(p):
     if (p > 0.01):
@@ -88,7 +96,26 @@ def generate_random_number(bit_length, mouse_data):
         print("Using os.urandom() for generating random number.")
         num_bytes = (bit_length + 7) // 8
         hash_digest = os.urandom(num_bytes)
-        combined_bytes=hash_digest
+        combined_bytes = hash_digest
+
+    if bit_length > 2048:
+        print("Using hash function for generating random number.")
+        # Determine the number of hash functions needed
+        num_hashes = (bit_length + 1023) // 2048  # Each hash contributes 1024 bits, and we need at least one hash
+
+        hash_digests = []
+        for _ in range(num_hashes):
+            hash_function = get_hash_function(1024)
+            hash_digest = hash_function(
+                mouse_data.encode() + os.urandom(16)).digest()  # Combining mouse_data with random bytes
+            hash_digests.append(hash_digest)
+
+        remaining_bit_length = bit_length - len(hash_digest) * 8
+        num_bytes_needed = (remaining_bit_length + 7) // 8
+        # second_half_random = os.urandom(num_bytes_needed)
+
+        # Combine the truncated hash digest with the second half of os.urandom bytes
+        combined_bytes = b''.join(hash_digests)
 
     else:
         # Round the bit length to the nearest hash function
@@ -96,9 +123,8 @@ def generate_random_number(bit_length, mouse_data):
         print("Using hash function for generating random number.")
         # Pevný časový interval na základě současného času
         current_time = int(time.time())
-        #duration = current_time % 10 + 5  # Pevný časový interval mezi 5 a 15 sekundami
-        #duration = random.randint(0, 0) + random.random()  # Duration in seconds
-
+        # duration = current_time % 10 + 5  # Pevný časový interval mezi 5 a 15 sekundami
+        # duration = random.randint(0, 0) + random.random()  # Duration in seconds
 
         hash_function = get_hash_function(rounded_bit_length)
         hash_object = hash_function(mouse_data.encode())
@@ -124,7 +150,7 @@ def generate_random_number(bit_length, mouse_data):
     random_integer &= (1 << bit_length) - 1
 
     bitRandom = bin(random_integer)[2:]
-    while len(bitRandom)!=bit_length and bit_length==128:
+    while len(bitRandom) != bit_length and bit_length == 128:
         random_integer |= 1 << (bit_length - 1)
         bitRandom = bin(random_integer)[2:]
 
@@ -136,6 +162,7 @@ def round_to_nearest_hash_function(bit_length):
     hash_functions = [128, 256, 512, 1024]  # List of hash function bit lengths
     nearest_hash = min(hash_functions, key=lambda x: abs(x - bit_length))
     return nearest_hash
+
 
 def is_file_empty(file_path):
     return os.path.exists(file_path) and os.stat(file_path).st_size == 0
@@ -170,8 +197,7 @@ while choose_an_action != 0:
             counter = 0
             random_number = generate_random_number(bit_length, mouse_data)
 
-
-            #print(f"Random number with {bit_length} bits: {random_number}")
+            # print(f"Random number with {bit_length} bits: {random_number}")
             if len(str(random_number)) > 199:
                 print(f"Random number with {bit_length} bits: {str(random_number)[:200]}..")
             else:
@@ -181,21 +207,44 @@ while choose_an_action != 0:
 
         elif choose_an_action == 2:
             logging.info("Chosen action -> \'Import number from a file(bin/txt)\'")
-            file_path = "generated_numbers.txt"
-            is_empty = is_file_empty(file_path)
-            if is_empty:
-                print("File is empty")
-            else:
-                with open("generated_numbers.txt", "r", encoding="utf-8") as f:
-                    lines = f.readlines()
-                    last_line = lines[-1:]
+            print("System is using generated_numbers.txt file for import/export")
 
-                for i in last_line:
-                    if i.isdigit():
-                        number_in_file = int(i)
-                        print("Generated number from file: ", number_in_file)
-                        generatedNumber = number_in_file
-            continue
+            print("1 - Importing plain text number")
+            print("2 - Importing encrypted number")
+
+            chooseImport = int(input("Choose how the number should be imported"))
+            if chooseImport == 1:
+                file_path = "generated_numbers.txt"
+                is_empty = is_file_empty(file_path)
+                if is_empty:
+                    print("File is empty")
+                else:
+                    with open("generated_numbers.txt", "r", encoding="utf-8") as f:
+                        lines = f.readlines()
+                        last_line = lines[-1:]
+
+                    for i in last_line:
+                        if i.isdigit():
+                            number_in_file = int(i)
+                            print("Generated number from file: ", number_in_file)
+                            generatedNumber = number_in_file
+                continue
+            elif chooseImport == 2:
+                with open("fernet_key.txt", "rb") as f:
+                    key = f.read()
+
+                cipher = Fernet(key)
+
+                with open("encrypted_number.txt", "rb") as f:
+                    for line in f:
+                        # Read each line (which should contain one encrypted number)
+                        encrypted_number = line.strip()
+                        # Decrypt the encrypted number
+                        decrypted_number = decrypt_number(encrypted_number, cipher)
+                        print("Decrypted Number:", decrypted_number)
+
+                continue
+
         elif choose_an_action == 3:
             logging.info("Chosen action -> \'Test number\'")
             print("1 - NIST STS tests")
@@ -208,22 +257,22 @@ while choose_an_action != 0:
                     print(f"Testing number {generatedNumber}\n")
                     bitRepresent = bin(generatedNumber)[2:]
 
-                    #The focus of this test is the proportion of zeroes and ones for the entire sequence.
-                    #The purpose of this test is to determine whether the number of ones and zeros in a sequence are approximately the same as would be expected for a truly random sequence.
+                    # The focus of this test is the proportion of zeroes and ones for the entire sequence.
+                    # The purpose of this test is to determine whether the number of ones and zeros in a sequence are approximately the same as would be expected for a truly random sequence.
                     print("Frequency (Monobit) Test:")
                     sts = prngtest.monobit(bitRepresent)
                     print(sts)
                     resultPresenting(sts[1])
                     print("\n")
 
-                    #The focus of this test is the total number of runs in the sequence, where a run is an uninterrupted sequence of identical bits
+                    # The focus of this test is the total number of runs in the sequence, where a run is an uninterrupted sequence of identical bits
                     print("Runs Test:")
                     sts = prngtest.runs(bitRepresent)
                     print(sts)
                     resultPresenting(sts[1])
                     print("\n")
 
-                    #The focus of the test is the proportion of ones within M-bit blocks.
+                    # The focus of the test is the proportion of ones within M-bit blocks.
                     print("Block Frequency Test:")
                     blocksize = max(math.ceil(0.0125 * len(bitRepresent)), 4)
                     if blocksize >= 20:
@@ -235,8 +284,8 @@ while choose_an_action != 0:
                         print(
                             f"This number has too small blocksize for this test. Blocksize is {blocksize} needs to be 20 or more (bit length needs to be greater than 1700b)\n")
 
-                    #The focus of this test is the peak heights in the Discrete Fourier Transform of the sequence.
-                    #The purpose of this test is to detect periodic features (i.e., repetitive patterns that are near each other) in the tested sequence that would indicate a deviation from the assumption of randomness.
+                    # The focus of this test is the peak heights in the Discrete Fourier Transform of the sequence.
+                    # The purpose of this test is to detect periodic features (i.e., repetitive patterns that are near each other) in the tested sequence that would indicate a deviation from the assumption of randomness.
                     print("Discrete Fourier Transform (Spectral) Test")
                     if len(bitRepresent) >= 1024:
                         sts = prngtest.spectral(bitRepresent)
@@ -246,7 +295,7 @@ while choose_an_action != 0:
                     else:
                         print("This number is too small for this test. Bit length needs to be greater than 1024b\n")
 
-                    #Overlapping matches to template per block is compared to expected result
+                    # Overlapping matches to template per block is compared to expected result
                     print("Overlapping Template Matching Test")
                     if len(bitRepresent) >= 288:
                         sts = prngtest.otm(bitRepresent, None, None)
@@ -255,7 +304,7 @@ while choose_an_action != 0:
                         print("\n")
                     else:
                         print("This number is too small for this test. Bit length needs to be greater than 288b\n")
-                    #The focus of this test is the number of bits between matching patterns.
+                    # The focus of this test is the number of bits between matching patterns.
 
                     print("Maurer’s “Universal Statistical” Test ")
                     if len(bitRepresent) >= 400000:
@@ -266,7 +315,7 @@ while choose_an_action != 0:
                     else:
                         print("This number is too small for this test. Bit length needs to be greater than 400000 b\n")
 
-                    #The focus of this test is the length of a linear feedback shift register (LFSR).
+                    # The focus of this test is the length of a linear feedback shift register (LFSR).
                     print("Linear Complexity Test")
                     if len(bitRepresent) >= 1000000:
                         sts = prngtest.complexity(bitRepresent, None)
@@ -276,7 +325,7 @@ while choose_an_action != 0:
                     else:
                         print("This number is too small for this test. Bit length needs to be greater than 1mil b\n")
 
-                    #The focus of this test is the frequency of all possible overlapping m-bit patterns across the entire sequence.
+                    # The focus of this test is the frequency of all possible overlapping m-bit patterns across the entire sequence.
                     print("Serial Test")  # 2 OUTPUT
                     sts = prngtest.serial(bitRepresent, None)
                     print(sts)
@@ -285,13 +334,12 @@ while choose_an_action != 0:
 
                     print("\n")
 
-                    #The focus of this test is the maximal excursion (from zero) of the random walk defined by the cumulative sum of adjusted (-1, +1) digits in the sequence
+                    # The focus of this test is the maximal excursion (from zero) of the random walk defined by the cumulative sum of adjusted (-1, +1) digits in the sequence
                     print("Cumulative Sums (Cusum) Test")
                     sts = prngtest.cumsum(bitRepresent, False)
                     print(sts)
                     resultPresenting(sts[1])
                     print("\n")
-
 
                     print("Cumulative Sums (Cusum) Test - REVERSE")
                     sts = prngtest.cumsum(bitRepresent, True)
@@ -311,22 +359,29 @@ while choose_an_action != 0:
                     print("Please generate or load number before testing!")
 
             elif chooseTest == 2:
-                try:
-                    print("You choose Diedharder tests\n")
-                    print(f"Testing number {generatedNumber}\n")
-                    bitRepresent = bin(generatedNumber)[2:]
+                # try:
+                print("You choose Diedharder tests\n")
+                print(f"Testing number {generatedNumber}\n")
+                bitRepresent = bin(generatedNumber)[2:]
 
-                    print("Birthday Spacing Test")
-                    dieharder.birthday_spacing_test(n_numbers=bit_length, range_interval=bit_length)
-                    print("\n")
-                    print("Diehard Runs Test")
-                    dieharder.diehard_runs_test(bitRepresent)
-                    print("\n")
-                    rank = dieharder.binary_rank_test(generatedNumber, bit_length)
-                    print(f"Rank: {rank}, less number is better")
-                    print("\n")
-                except:
-                    print("Please generate or load number before testing!")
+                print("Birthday Spacing Test")
+                dieharder.birthday_spacing_test(n_numbers=bit_length, range_interval=bit_length)
+                print("\n")
+
+                print("Diehard Runs Test")
+                dieharder.diehard_runs_test(bitRepresent)
+                print("\n")
+
+                print("Binary Rank Test")
+                rank = dieharder.binary_rank_test(generatedNumber, bit_length)
+                print(f"Rank: {rank}, less number is better")
+                print("\n")
+
+                print("Count Ones test")
+                dieharder.count_ones_test(bitRepresent)
+                print("\n")
+            # except:
+            # print("Please generate or load number before testing!")
 
             continue
         elif choose_an_action == 4:
@@ -335,10 +390,24 @@ while choose_an_action != 0:
             if generatedNumber == 0 or None:
                 print("Number was not generated. If you want generate number press 1 or 5")
             else:
+                number_to_encode = generatedNumber
+
+                key = Fernet.generate_key()  # Generate a Fernet key
+                cipher = Fernet(key)  # Initialize a Fernet cipher object with the key
+                number_bytes = str(number_to_encode).encode()  # Convert number to bytes
+                encrypted_number = cipher.encrypt(number_bytes)  # Encrypt the number
+
+                with open("encrypted_number.txt", "wb") as f:  # Write the encrypted number to a file
+                    f.write(encrypted_number)
+                with open("fernet_key.txt", "wb") as f: # Save the key to a file
+                    f.write(key)
+                print("Encrypted number saved to file successfully.")
+
                 with open("generated_numbers.txt", "a", encoding="utf-8") as f:
                     f.write("\n")
                     f.write(str(generatedNumber))
-                print("Generated number was written into file.")
+                print("Plain number saved to file successfully.")
+
                 logging.info("{} writted into a file".format(generatedNumber))
                 log_timestamp()
             continue
@@ -364,7 +433,7 @@ while choose_an_action != 0:
                         generatedNumber = random_number
                         print(f"Random number with {bit_length} bits: {str(random_number)[:200]}..")
                         break
-                    elif counter > 100000:
+                    elif counter > 200000:
                         generatedNumber = None
                         print(f"Not able to generate random number with {bit_length} bits")
                         break
